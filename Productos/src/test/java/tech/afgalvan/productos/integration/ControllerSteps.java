@@ -1,15 +1,15 @@
 package tech.afgalvan.productos.integration;
 
-import io.cucumber.java.BeforeStep;
-import io.cucumber.java.en.*;
+import io.cucumber.java.AfterAll;
+import io.cucumber.java.BeforeAll;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.HttpClient;
-import io.micronaut.http.client.annotation.Client;
-import jakarta.inject.Inject;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import tech.afgalvan.productos.controllers.responses.ProductResponse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,18 +17,17 @@ import java.net.URL;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
-public class CreateProduct {
+public class ControllerSteps {
 
-    HttpClient client;
+    private static HttpClient client;
     HttpRequest<?> request;
     HttpResponse<?> response;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    @BeforeStep
-    public void setupClient() throws MalformedURLException {
-        client = HttpClient.create(new URL("http://localhost:9000/api/products"));
+    @BeforeAll
+    public static void setup() throws MalformedURLException {
+        client = HttpClient.create(new URL("http://localhost:9000"));
     }
 
     @When("I send a POST request to {string} with body:")
@@ -50,5 +49,10 @@ public class CreateProduct {
     private void sendPostRequestTo(String endpoint, String body) {
         request = HttpRequest.POST(endpoint, body);
         response = client.toBlocking().exchange(request, Argument.of(Map.class));
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        client.stop();
     }
 }
